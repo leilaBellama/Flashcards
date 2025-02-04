@@ -31,4 +31,17 @@ public class FlashcardRepository {
     public void remove(int id) {
         dataSource.removeFlashcard(id);
     }
+
+    public void append(Flashcard flashcard) {
+        dataSource.putFlashcard(
+                flashcard.withSortOrder(dataSource.getMaxSortOrder() + 1)
+        );
+    }
+
+    public void prepend(Flashcard flashcard) {
+        dataSource.shiftSortOrders(0, dataSource.getMaxSortOrder(), 1);
+        dataSource.putFlashcard(
+                flashcard.withSortOrder(dataSource.getMinSortOrder() - 1)
+        );
+    }
 }

@@ -10,18 +10,25 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import edu.ucsd.cse110.secards.app.databinding.ListItemCardBinding;
 import edu.ucsd.cse110.secards.lib.domain.Flashcard;
 
 public class CardListAdapter extends ArrayAdapter<Flashcard> {
-    public CardListAdapter(Context context, List<Flashcard> flashcards) {
+    Consumer<Integer> onDeleteClick;
+    public CardListAdapter(
+            Context context,
+            List<Flashcard> flashcards,
+            Consumer<Integer> onDeleteClick
+    ) {
         // This sets a bunch of stuff internally, which we can access
         // with getContext() and getItem() for example.
         //
         // Also note that ArrayAdapter NEEDS a mutable List (ArrayList),
         // or it will crash!
         super(context, 0, new ArrayList<>(flashcards));
+        this.onDeleteClick = onDeleteClick;
     }
 
     @NonNull
@@ -45,6 +52,12 @@ public class CardListAdapter extends ArrayAdapter<Flashcard> {
         // Populate the view with the flashcard's data.
         binding.cardFrontText.setText(flashcard.front());
         binding.cardBackText.setText(flashcard.back());
+
+        binding.cardDeleteButton.setOnClickListener(v -> {
+            var id = flashcard.id();
+            assert id != null;
+            onDeleteClick.accept(id);
+        });
 
         return binding.getRoot();
     }

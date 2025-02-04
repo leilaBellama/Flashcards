@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import edu.ucsd.cse110.secards.lib.util.errors.NotImplementedException;
 
@@ -12,10 +13,13 @@ public class Flashcard implements Serializable {
     private final @NonNull String front;
     private final @NonNull String back;
 
+    private Integer sortOrder;
+
     public Flashcard(@Nullable Integer id, @NonNull String front, @NonNull String back, int sortOrder) {
         this.id = id;
         this.front = front;
         this.back = back;
+        this.sortOrder = sortOrder;
     }
 
     public @Nullable Integer id() {
@@ -30,25 +34,26 @@ public class Flashcard implements Serializable {
         return back;
     }
 
-    public int sortOrder() {
-        throw new NotImplementedException("sortOrder");
-    }
+    public int sortOrder() { return sortOrder; }
 
     public Flashcard withId(int id) {
-        throw new NotImplementedException("withId");
+        return new Flashcard(id, this.front, this.back, this.sortOrder);
     }
 
     public Flashcard withSortOrder(int sortOrder) {
-        throw new NotImplementedException("withSortOrder");
+        return new Flashcard(this.id, this.front, this.back, sortOrder);
     }
 
     @Override
     public boolean equals(Object o) {
-        throw new NotImplementedException("equals");
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Flashcard flashcard = (Flashcard) o;
+        return Objects.equals(id, flashcard.id) && Objects.equals(front, flashcard.front) && Objects.equals(back, flashcard.back) && Objects.equals(sortOrder, flashcard.sortOrder);
     }
 
     @Override
     public int hashCode() {
-        throw new NotImplementedException("hashCode");
+        return Objects.hash(id, front, back, sortOrder);
     }
 }

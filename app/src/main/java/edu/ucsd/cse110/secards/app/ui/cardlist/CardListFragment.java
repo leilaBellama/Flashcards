@@ -15,6 +15,8 @@ import java.util.List;
 
 import edu.ucsd.cse110.secards.app.MainViewModel;
 import edu.ucsd.cse110.secards.app.databinding.FragmentCardListBinding;
+import edu.ucsd.cse110.secards.app.ui.cardlist.dialog.ConfirmDeleteCardDialogFragment;
+import edu.ucsd.cse110.secards.app.ui.cardlist.dialog.CreateCardDialogFragment;
 
 public class CardListFragment extends Fragment {
     private MainViewModel activityModel;
@@ -43,7 +45,10 @@ public class CardListFragment extends Fragment {
         this.activityModel = modelProvider.get(MainViewModel.class);
 
         // Initialize the Adapter (with an empty list for now)
-        this.adapter = new CardListAdapter(requireContext(), List.of());
+        this.adapter = new CardListAdapter(requireContext(), List.of(), id -> {
+            var dialogFragment = ConfirmDeleteCardDialogFragment.newInstance(id);
+            dialogFragment.show(getParentFragmentManager(), "ConfirmDeleteCardDialogFragment");
+        });
         activityModel.getOrderedCards().observe(cards -> {
             if (cards == null) return;
             adapter.clear();
@@ -58,7 +63,12 @@ public class CardListFragment extends Fragment {
         this.view = FragmentCardListBinding.inflate(inflater, container, false);
 
         // Set the adapter on the ListView
-        view.cardList.setAdapter(adapter); 
+        view.cardList.setAdapter(adapter);
+
+        view.createCardButton.setOnClickListener(v -> {
+            var dialogFragment = CreateCardDialogFragment.newInstance();
+            dialogFragment.show(getParentFragmentManager(), "CreateCardDialogFragment");
+        });
 
         return view.getRoot();
     }

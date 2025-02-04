@@ -7,10 +7,13 @@ import androidx.lifecycle.viewmodel.ViewModelInitializer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import edu.ucsd.cse110.secards.lib.domain.Flashcard;
 import edu.ucsd.cse110.secards.lib.domain.FlashcardRepository;
+import edu.ucsd.cse110.secards.lib.domain.Flashcards;
 import edu.ucsd.cse110.secards.lib.util.Subject;
 
 public class MainViewModel extends ViewModel {
@@ -18,7 +21,6 @@ public class MainViewModel extends ViewModel {
     private final FlashcardRepository flashcardRepository;
 
     // UI state
-    private final Subject<List<Integer>> cardOrdering;
     private final Subject<List<Flashcard>> orderedCards;
     private final Subject<Flashcard> topCard;
     private final Subject<Boolean> isShowingFront;
@@ -37,7 +39,6 @@ public class MainViewModel extends ViewModel {
         this.flashcardRepository = flashcardRepository;
 
         // Create the observable subjects.
-        this.cardOrdering = new Subject<>();
         this.orderedCards = new Subject<>();
         this.topCard = new Subject<>();
         this.isShowingFront = new Subject<>();
@@ -50,25 +51,11 @@ public class MainViewModel extends ViewModel {
         flashcardRepository.findAll().observe(cards -> {
             if (cards == null) return; // not ready yet, ignore
 
-            var ordering = new ArrayList<Integer>();
-            for (int i = 0; i < cards.size(); i++) {
-                ordering.add(i);
-            }
-            cardOrdering.setValue(ordering);
-        });
+            var newOrderedCards = cards.stream()
+                    .sorted(Comparator.comparingInt(Flashcard::sortOrder))
+                    .collect(Collectors.toList());
 
-
-        // When the ordering changes, update the ordered cards.
-        cardOrdering.observe(ordering -> {
-            if (ordering == null) return;
-
-            var cards = new ArrayList<Flashcard>();
-            for (var id : ordering) {
-                var card = flashcardRepository.find(id).getValue();
-                if (card == null) return;
-                cards.add(card);
-            }
-            this.orderedCards.setValue(cards);
+            orderedCards.setValue(newOrderedCards);
         });
 
         // When the ordering changes, update the top card.
@@ -113,29 +100,40 @@ public class MainViewModel extends ViewModel {
     }
 
     public void stepForward() {
-        var ordering = this.cardOrdering.getValue();
-        if (ordering == null) return;
+        var cards = this.orderedCards.getValue();
+        if (cards == null) return;
 
-        var newOrdering = new ArrayList<>(ordering);
-        Collections.rotate(newOrdering, -1);
-        this.cardOrdering.setValue(newOrdering);
+        var newCards = Flashcards.rotate(cards, -1);
+
+        flashcardRepository.save(newCards);
     }
 
     public void stepBackward() {
-        var ordering = this.cardOrdering.getValue();
-        if (ordering == null) return;
+        var cards = this.orderedCards.getValue();
+        if (cards == null) return;
 
-        var newOrdering = new ArrayList<>(ordering);
-        Collections.rotate(newOrdering, 1);
-        this.cardOrdering.setValue(newOrdering);
+        var newCards = Flashcards.rotate(cards, 1);
+        flashcardRepository.save(newCards);
     }
 
     public void shuffle() {
-        var ordering = this.cardOrdering.getValue();
-        if (ordering == null) return;
+        var cards = this.orderedCards.getValue();
+        if (cards == null) return;
 
-        var newOrdering = new ArrayList<>(ordering);
-        Collections.shuffle(newOrdering);
-        this.cardOrdering.setValue(newOrdering);
+        var newCards = Flashcards.shuffle(cards);
+        flashcardRepository.save(newCards);
     }
+
+    public void append(Flashcard card) {
+        flashcardRepository.append(card);
+    }
+
+    public void prepend(Flashcard card) {
+        flashcardRepository.prepend(card);
+    }
+
+    public void remove(int id) {
+        flashcardRepository.remove(id);
+    }
+
 }
