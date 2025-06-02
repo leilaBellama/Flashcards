@@ -1,3 +1,3 @@
-# Software Engineering Cards
+# Software Engineering Flashcards
 
-Reference app used in CSE 110 Winter 2024 labs.
+Flashcard app created in UCSD CSE 110 Winter 2024 labs.
